@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>D3 HW4</title>
+        <script src="https://d3js.org/d3.v5.min.js"></script>
+
+        <style type="text/css">
+        .mycircle {
+          fill: blue; 
+          stroke: red; 
+          stroke-width: 5;
+        }
+        svg .myrect {
+            fill: blue;
+            stroke-width: 0px;
+        }
+        svg .projection {
+          fill: white;
+        }
+        </style>
+        
+        <script type="text/javascript">
+            var myData;
+			var min;
+			var max;
+            function loadData()
+            {
+              d3.csv("https://raw.githubusercontent.com/hkim1111/HW3-2/master/losses2015_transformed.csv")
+                .then(function(data)
+              {
+                myData = data;
+				
+				
+				
+				var byName = d3.nest()
+				.key(function(d) { return d.Damage_Descp; })
+				.rollup(function(d){ return d3.sum(d,function(g){return g.Amount;})})
+				.entries(myData);
+				byName.sort(function(x,y){
+					return d3.ascending(x.value,y.value);
+				});
+				console.log(byName[32].value)
+				xscale=d3.scaleLinear().domain([byName[0].value,byName[32].value]).range([0,500]);
+				ticks=xscale.ticks(5);
+				console.log(xscale(byName[32].value))
+				
+					console.log(ticks)
+				yscale=d3.scaleLinear();
+                createBarChart(byName);
+				
+              });
+            }
+            function createBarChart(byName) {
+			var xAxis=d3.axisBottom().scale(xscale);
+		
+			xAxis.tickValues(ticks).tickFormat(function(d){return d/1000000+"M" });
+			var counter=0;
+              var svg = d3.select("body")
+                          .append("svg")
+                          .attr("width", 1200)
+                          .attr("height", 1500)
+			  .attr("margin",10);
+              // generate bars
+              svg.selectAll("g")
+                  .data(byName)
+                  .enter()
+                  .append("rect")
+                  .attr("x", 225)
+                  .attr("y", function(d, i)
+                    {
+						
+                      return (i+1)*(20+2);
+                    })
+                  .attr("height", 20)
+                  .attr("width", function(d, i)
+                    {						   
+                      return xscale(d.value);
+					
+                    })
+                  .attr("class", "myrect");
+           
+			  
+              svg.selectAll("text.Damage_Descp")
+                  .data(byName)
+                  .enter()
+                  .append("text")
+                  .text(function(d, i)
+                    {
+						
+						
+                      return d.key;
+                    })
+                  .attr("x", 0)
+                  .attr("y", function(d, i)
+                    {
+                      return (i+1)*(20+2) + 15;
+                    });
+					svg.append("line")
+					.style("stroke","black")
+					.attr("x1",220)
+					.attr("y1",22)
+					.attr("x2",220)
+					.attr("y2",745)
+					
+				svg.append("g").attr("class","axis").attr("transform","translate(220,745)").call(xAxis)	
+             
+            }
+            window.onload = loadData;
+        </script>
+
+
+    </head>
+
+
+    <body>
+
+    </body>
+</html>
